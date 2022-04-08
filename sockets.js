@@ -24,7 +24,7 @@ function listen(io) {
         });
 
         socket.on('restartGame', () => {
-            if (!pongNamespace.adapter.rooms.get(room).restartReady) {
+            if (!pongNamespace.adapter.rooms.get(room)) {
                 console.log(`Client ${socket.id} left room.`);
                 socket.leave(room);
             } else {
