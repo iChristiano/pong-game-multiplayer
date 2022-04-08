@@ -24,15 +24,20 @@ function listen(io) {
         });
 
         socket.on('restartGame', () => {
-            pongNamespace.adapter.rooms.get(room).restartReady = pongNamespace.adapter.rooms.get(room).restartReady || new Set();
-            pongNamespace.adapter.rooms.get(room).restartReady.add(socket.id);
-            pongNamespace.to(socket.id).emit('restartGameReady', socket.id);
-            console.log('Player ready replay [namespace/id/room]:', socket.nsp.name, socket.id, room);
+            if (!pongNamespace.adapter.rooms.get(room).restartReady) {
+                console.log(`Client ${socket.id} left room.`);
+                socket.leave(room);
+            } else {
+                pongNamespace.adapter.rooms.get(room).restartReady = pongNamespace.adapter.rooms.get(room).restartReady || new Set();
+                pongNamespace.adapter.rooms.get(room).restartReady.add(socket.id);
+                pongNamespace.to(socket.id).emit('restartGameReady', socket.id);
+                console.log('Player ready replay [namespace/id/room]:', socket.nsp.name, socket.id, room);
 
-            if (pongNamespace.adapter.rooms.get(room).restartReady.size === 2) {
-                pongNamespace.in(room).emit('startGame', socket.id);
-                pongNamespace.adapter.rooms.get(room).restartReady.clear();
-                console.log('Restart game [namespace/room]:', socket.nsp.name, room);
+                if (pongNamespace.adapter.rooms.get(room).restartReady.size === 2) {
+                    pongNamespace.in(room).emit('startGame', socket.id),room;
+                    pongNamespace.adapter.rooms.get(room).restartReady.clear();
+                    console.log('Restart game [namespace/room]:', socket.nsp.name, room);
+                }
             }
         });
 
