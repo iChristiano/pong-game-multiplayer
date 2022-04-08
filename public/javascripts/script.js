@@ -323,7 +323,7 @@ function restartGame() {
   isNewGame = true;
   score = [0,0];
   createCanvas();
-  socket.emit('restartGame');
+  socket.emit('ready');
 }
 
 // On Load
