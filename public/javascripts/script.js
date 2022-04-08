@@ -347,8 +347,7 @@ socket.on('restartGameReady', ((refereeId) => {
 }));
 
 socket.on('opponentDisconnected', (() => {
-  renderIntro();
-  socket.emit('ready');
+  restartGame();
 }));
 
 socket.on('paddleMove', (paddleData) => {
