@@ -317,9 +317,13 @@ function startGame() {
 }
 
 function restartGame() {
-  if (gameOverEl) {
+  // if (gameOverEl) {
+  //   body.removeChild(gameOverEl);
+  // }
+
+  if (body.contains(gameOverEl)) {
     body.removeChild(gameOverEl);
-  }
+  } 
   
   canvas.hidden = false;
   isGameOver = false;
