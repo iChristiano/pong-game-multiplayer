@@ -287,8 +287,10 @@ function animate() {
 // Load Game
 function loadGame() {
   const initGameEl = document.querySelector('#init-screen_container');
-  body.removeChild(initGameEl);
-
+  if (initGameEl) {
+    body.removeChild(initGameEl);
+  }
+  
   createCanvas();
   renderIntro();
   socket.emit('ready');
@@ -344,9 +346,9 @@ socket.on('restartGameReady', ((refereeId) => {
   renderIntro();
 }));
 
-// socket.on('opponentDisconnected', (() => {
-//   loadGame();
-// }));
+socket.on('opponentDisconnected', (() => {
+  loadGame();
+}));
 
 socket.on('paddleMove', (paddleData) => {
   // toggle 1 into o, or 0 into 1
