@@ -317,7 +317,10 @@ function startGame() {
 }
 
 function restartGame() {
-  body.removeChild(gameOverEl);
+  if (gameOverEl) {
+    body.removeChild(gameOverEl);
+  }
+  
   canvas.hidden = false;
   isGameOver = false;
   isNewGame = true;
