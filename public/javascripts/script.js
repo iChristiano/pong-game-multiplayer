@@ -17,6 +17,8 @@ let isNewGame = true;
 const namePlayer1 = 'Player 1'; 
 const namePlayer2 = 'Player 2';
 
+let opponentDisconnected = false;
+
 // Room name
 let roomName;
 
@@ -273,6 +275,9 @@ function gameOver() {
 
 // Called Every Frame
 function animate() {
+  if (opponentDisconnected) {
+    return;
+  }
   if (isReferee) {
     ballMove();
     ballBoundaries();
@@ -339,6 +344,7 @@ socket.on('connect', () => {
 });
 
 socket.on('startGame', ((refereeId, room) => {
+  opponentDisconnected = false;
   console.log('RefereeId', refereeId);
   roomName = room;
   isReferee = socket.id === refereeId ? true : false;
@@ -351,6 +357,7 @@ socket.on('restartGameReady', ((refereeId) => {
 }));
 
 socket.on('opponentDisconnected', (() => {
+  opponentDisconnected = true;
   restartGame();
 }));
 
