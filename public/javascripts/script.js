@@ -287,9 +287,9 @@ function animate() {
 // Load Game
 function loadGame() {
   const initGameEl = document.querySelector('#init-screen_container');
-  if (initGameEl) {
+  if (body.contains(initGameEl)) {
     body.removeChild(initGameEl);
-  }
+  } 
   
   createCanvas();
   renderIntro();
@@ -317,10 +317,6 @@ function startGame() {
 }
 
 function restartGame() {
-  // if (gameOverEl) {
-  //   body.removeChild(gameOverEl);
-  // }
-
   if (body.contains(gameOverEl)) {
     body.removeChild(gameOverEl);
   } 
@@ -330,6 +326,7 @@ function restartGame() {
   isNewGame = true;
   score = [0,0];
   createCanvas();
+  renderIntro();
   socket.emit('ready');
 }
 
