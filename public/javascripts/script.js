@@ -252,7 +252,7 @@ function showGameOverEl(winner) {
 
   // Button
   const playAgainBtn = document.createElement('button');
-  playAgainBtn.setAttribute('onclick', 'restartGame()');
+  playAgainBtn.setAttribute('onclick', 'loadGame()');
   playAgainBtn.textContent = 'Play Again';
 
   // Append
