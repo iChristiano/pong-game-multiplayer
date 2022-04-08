@@ -34,7 +34,7 @@ function listen(io) {
                 console.log('Player ready replay [namespace/id/room]:', socket.nsp.name, socket.id, room);
 
                 if (pongNamespace.adapter.rooms.get(room).restartReady.size === 2) {
-                    pongNamespace.in(room).emit('startGame', socket.id),room;
+                    pongNamespace.in(room).emit('startGame', socket.id, room);
                     pongNamespace.adapter.rooms.get(room).restartReady.clear();
                     console.log('Restart game [namespace/room]:', socket.nsp.name, room);
                 }

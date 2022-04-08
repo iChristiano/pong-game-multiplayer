@@ -339,7 +339,8 @@ socket.on('startGame', ((refereeId, room) => {
   startGame();
 }));
 
-socket.on('restartGameReady', (() => {
+socket.on('restartGameReady', ((refereeId) => {
+  console.log('Restart refereeId', refereeId);
   renderIntro();
 }));
 
