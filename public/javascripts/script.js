@@ -14,10 +14,8 @@ let isGameOver = false;
 let isNewGame = true;
 
 // Player
-const namePlayer1 = 'Player 1'; 
-const namePlayer2 = 'Player 2';
-
-let opponentDisconnected = false;
+const namePlayerTop = 'Player 1';
+const namePlayerBottom = 'Player 2';
 
 // Room name
 let roomName;
@@ -44,18 +42,66 @@ let speedX = 0;
 let score = [ 0, 0 ];
 const winningScore = 5;
 
+// 
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+
+/**
+ * Rendering
+ */
+
+function renderInitScreen() {
+  // Container
+  const initGameEl = document.createElement('div');
+  initGameEl.setAttribute('id','init-screen_container');
+
+  // Title
+  const title = document.createElement('h1');
+  title.classList.add('init-screen_title');
+  title.textContent = `Pong Multiplayer`;
+
+  // buttonGroup
+  const buttonGroup = document.createElement('div');
+  buttonGroup.classList.add('init-screen_buttonGroup');
+
+  // Button
+  const startGameBtnEl = document.createElement('button');
+  startGameBtnEl.classList.add('init-screen_button');
+  startGameBtnEl.setAttribute('onclick', 'loadGame()');
+  startGameBtnEl.textContent = 'Enter Game Room'; 
+
+  buttonGroup.append(startGameBtnEl);
+
+  // footerGroup
+  const footerGroup = document.createElement('div');
+  footerGroup.classList.add('init-screen_footerGroup');
+
+  // Text
+  const footerTextEl = document.createElement('p');
+  footerTextEl.classList.add('init-screen_footerText');
+  footerTextEl.textContent = `Screen designed by Julian`;
+
+  footerGroup.append(footerTextEl);
+
+  // Append
+  initGameEl.append(title, buttonGroup, footerGroup);
+  body.appendChild(initGameEl);
+}
+
 // Create Canvas Element
 function createCanvas() {
   canvas.id = 'canvas';
   canvas.width = width;
   canvas.height = height;
   canvas.setAttribute('style',`margin-top: ${Math.floor((window.innerHeight - height)/2)}px`)
-  document.body.appendChild(canvas);
+  body.appendChild(canvas);
   renderCanvas();
 }
 
 // Wait for Opponents
-function renderIntro() {
+function renderWaitForOpponents() {
   // Canvas Background
   context.fillStyle = 'black';
   context.fillRect(0, 0, width, height);
@@ -107,9 +153,9 @@ function renderCanvas() {
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  context.fillText(namePlayer2, canvas.width/2, canvas.height * 3/16); 
+  context.fillText(namePlayerTop, canvas.width/2, canvas.height * 3/16); 
   context.fillStyle = 'rgba(255, 255, 255, 0.5)';
-  context.fillText(namePlayer1, canvas.width/2, canvas.height * 13/16); 
+  context.fillText(namePlayerBottom, canvas.width/2, canvas.height * 13/16); 
 
   // Room name
   context.font = "16px Courier New";
@@ -118,18 +164,36 @@ function renderCanvas() {
   context.fillStyle = 'rgba(255, 255, 255, 0.3)';
 }
 
-// Reset Ball to Center
-function ballReset() {
-  ballX = width / 2;
-  ballY = height / 2;
-  speedY = 3;
+function renderGameOver(winner) {
+  // Hide Canvas
+  //canvas.hidden = true;
 
-  socket.emit('ballMove', {
-    ballX,
-    ballY,
-    score
-  });
+  // Container
+  gameOverEl.textContent = '';
+  gameOverEl.classList.add('game-over-container');
+
+  // Box
+  const boxEl = document.createElement('div');
+  boxEl.classList.add('game-over-box');
+
+  // Title
+  const title = document.createElement('h1');
+  title.textContent = `${winner} Wins!`;
+
+  // Button
+  const playAgainBtn = document.createElement('button');
+  playAgainBtn.setAttribute('onclick', 'restartGame()');
+  playAgainBtn.textContent = 'Play Again';
+
+  // Append
+  boxEl.append(title, playAgainBtn);
+  gameOverEl.append(boxEl);
+  body.appendChild(gameOverEl);
 }
+
+/**
+ * Playground logic
+ */
 
 // Adjust Ball Movement
 function ballMove() {
@@ -139,6 +203,19 @@ function ballMove() {
   if (playerMoved) {
     ballX += speedX;
   }
+  socket.emit('ballMove', {
+    ballX,
+    ballY,
+    score
+  });
+}
+
+// Reset Ball to Center
+function ballReset() {
+  ballX = width / 2;
+  ballY = height / 2;
+  speedY = 3;
+
   socket.emit('ballMove', {
     ballX,
     ballY,
@@ -197,97 +274,9 @@ function ballBoundaries() {
   }
 }
 
-function initGameElement() {
-
-  // Container
-  const initGameEl = document.createElement('div');
-  initGameEl.setAttribute('id','init-screen_container');
-
-  // Title
-  const title = document.createElement('h1');
-  title.classList.add('init-screen_title');
-  title.textContent = `Pong Multiplayer`;
-
-  // buttonGroup
-  const buttonGroup = document.createElement('div');
-  buttonGroup.classList.add('init-screen_buttonGroup');
-
-  // Button
-  const startGameBtnEl = document.createElement('button');
-  startGameBtnEl.classList.add('init-screen_button');
-  startGameBtnEl.setAttribute('onclick', 'loadGame()');
-  startGameBtnEl.textContent = 'Enter Game Room'; 
-
-  buttonGroup.append(startGameBtnEl);
-
-  // footerGroup
-  const footerGroup = document.createElement('div');
-  footerGroup.classList.add('init-screen_footerGroup');
-
-  // Text
-  const footerTextEl = document.createElement('p');
-  footerTextEl.classList.add('init-screen_footerText');
-  footerTextEl.textContent = `Screen designed by Julian`;
-
-  footerGroup.append(footerTextEl);
-
-  // Append
-  initGameEl.append(title, buttonGroup, footerGroup);
-  body.appendChild(initGameEl);
-}
-
-function showGameOverEl(winner) {
-  // Hide Canvas
-  //canvas.hidden = true;
-
-  // Container
-  gameOverEl.textContent = '';
-  gameOverEl.classList.add('game-over-container');
-
-  // Box
-  const boxEl = document.createElement('div');
-  boxEl.classList.add('game-over-box');
-
-  // Title
-  const title = document.createElement('h1');
-  title.textContent = `${winner} Wins!`;
-
-  // Button
-  const playAgainBtn = document.createElement('button');
-  playAgainBtn.setAttribute('onclick', 'restartGame()');
-  playAgainBtn.textContent = 'Play Again';
-
-  // Append
-  boxEl.append(title, playAgainBtn);
-  gameOverEl.append(boxEl);
-  body.appendChild(gameOverEl);
-}
-
-// Check If One Player Has Winning Score, If They Do, End Game
-function gameOver() {
-  if (score[0] === winningScore || score[1] === winningScore) {
-    isGameOver = true;
-    // Set Winner
-    const winner = score[0] === winningScore ? `${namePlayer1}` : `${namePlayer2}`;
-    showGameOverEl(winner);
-  }
-}
-
-// Called Every Frame
-function animate() {
-  if (opponentDisconnected) {
-    return;
-  }
-  if (isReferee) {
-    ballMove();
-    ballBoundaries();
-  }
-  renderCanvas();
-  if (!isGameOver) {
-    window.requestAnimationFrame(animate);
-  }
-  gameOver();
-}
+/**
+ * Game logic
+ */
 
 // Load Game
 function loadGame() {
@@ -295,15 +284,14 @@ function loadGame() {
   if (body.contains(initGameEl)) {
     body.removeChild(initGameEl);
   } 
-  
   createCanvas();
-  renderIntro();
+  renderWaitForOpponents();
   socket.emit('ready');
 }
 
 function startGame() {
   paddleIndex = isReferee ? 0 : 1;
-  window.requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
   canvas.addEventListener('mousemove', (e) => {
     playerMoved = true;
     paddleX[paddleIndex] = e.offsetX;
@@ -321,44 +309,63 @@ function startGame() {
   });
 }
 
+// Game loop, called every frame
+function animate() {
+  if (isReferee) {
+    ballMove();
+    ballBoundaries();
+  }
+  renderCanvas();
+  if (!isGameOver) {
+    requestAnimationFrame(animate);
+  }
+  gameOver();
+}
+
+// Restart a game 
 function restartGame() {
   if (body.contains(gameOverEl)) {
     body.removeChild(gameOverEl);
-  } 
-  
+  }
   canvas.hidden = false;
   isGameOver = false;
   isNewGame = true;
   score = [0,0];
   createCanvas();
-  renderIntro();
-  socket.emit('ready');
+  socket.emit('restartGame');
 }
 
-// On Load
-initGameElement();
+// Check If One Player Has Winning Score, If They Do, End Game
+function gameOver() {
+  if (score[0] === winningScore || score[1] === winningScore) {
+    isGameOver = true;
+    // Set Winner
+    const winner = score[0] === winningScore ? `${namePlayerBottom}` : `${namePlayerTop}`;
+    renderGameOver(winner);
+  }
+}
 
-// socket connection
+/**
+ * Socket connection
+ */
+
 socket.on('connect', () => {
   console.log('Connected as socket id:', socket.id);
 });
 
 socket.on('startGame', ((refereeId, room) => {
-  opponentDisconnected = false;
-  console.log('RefereeId', refereeId);
+  console.log('Start refereeId @room', refereeId, room);
   roomName = room;
   isReferee = socket.id === refereeId ? true : false;
   startGame();
 }));
 
-socket.on('restartGameReady', ((refereeId) => {
-  console.log('Restart refereeId', refereeId);
-  renderIntro();
+socket.on('restartGameReady', ((refereeId, room) => {
+  renderWaitForOpponents();
 }));
 
 socket.on('opponentDisconnected', (() => {
-  opponentDisconnected = true;
-  restartGame();
+  location.reload();
 }));
 
 socket.on('paddleMove', (paddleData) => {
@@ -370,3 +377,6 @@ socket.on('paddleMove', (paddleData) => {
 socket.on('ballMove', (ballData) => {
   ({ ballX, ballY, score } = ballData);
 });
+
+// On Load render inital screen
+renderInitScreen();

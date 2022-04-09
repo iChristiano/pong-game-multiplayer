@@ -16,7 +16,7 @@ function listen(io) {
 
             readyPlayerCount++;
 
-            if (readyPlayerCount % 2 === 0) {
+            if (pongNamespace.adapter.rooms.get(room).size % 2 === 0) {
                 //brodcast game
                 pongNamespace.in(room).emit('startGame', socket.id, room);
                 console.log('Start game [namespace/room]:', socket.nsp.name, room);
@@ -24,20 +24,18 @@ function listen(io) {
         });
 
         socket.on('restartGame', () => {
-            if (!pongNamespace.adapter.rooms.get(room)) {
-                console.log(`Client ${socket.id} left room.`);
-                socket.leave(room);
-            } else {
-                pongNamespace.adapter.rooms.get(room).restartReady = pongNamespace.adapter.rooms.get(room).restartReady || new Set();
-                pongNamespace.adapter.rooms.get(room).restartReady.add(socket.id);
-                pongNamespace.to(socket.id).emit('restartGameReady', socket.id);
-                console.log('Player ready replay [namespace/id/room]:', socket.nsp.name, socket.id, room);
+            const clientIds = pongNamespace.adapter.rooms.get(room);
 
-                if (pongNamespace.adapter.rooms.get(room).restartReady.size === 2) {
-                    pongNamespace.in(room).emit('startGame', socket.id, room);
-                    pongNamespace.adapter.rooms.get(room).restartReady.clear();
-                    console.log('Restart game [namespace/room]:', socket.nsp.name, room);
-                }
+            if (clientIds.has(socket.id)) {
+                pongNamespace.adapter.rooms.get(room).restartPlayerCount = pongNamespace.adapter.rooms.get(room).restartPlayerCount+1 || 1;
+                pongNamespace.to(socket.id).emit('restartGameReady', socket.id, room);
+                console.log('restartGameReady [namespace/id/room]:', socket.nsp.name, socket.id, room);
+            }
+
+            if (pongNamespace.adapter.rooms.get(room).restartPlayerCount === 2) {
+                pongNamespace.in(room).emit('startGame', socket.id, room);
+                pongNamespace.adapter.rooms.get(room).restartPlayerCount = 0;
+                console.log('Restart game [namespace/room]:', socket.nsp.name, room);
             }
         });
 
@@ -51,7 +49,7 @@ function listen(io) {
 
         socket.on('disconnect', (reason) => {
             console.log(`Client ${socket.id} disconnected: ${reason}`);
-            pongNamespace.in(room).emit('opponentDisconnected', socket.id);
+            socket.to(room).emit('opponentDisconnected'); 
             socket.leave(room);
         });
     });
