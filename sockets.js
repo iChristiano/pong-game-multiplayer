@@ -49,7 +49,8 @@ function listen(io) {
 
         socket.on('disconnect', (reason) => {
             console.log(`Client ${socket.id} disconnected: ${reason}`);
-            socket.to(room).emit('opponentDisconnected'); 
+            //socket.to(room).emit('opponentDisconnected'); 
+            pongNamespace.in(room).emit('opponentDisconnected');
             socket.leave(room);
         });
     });
