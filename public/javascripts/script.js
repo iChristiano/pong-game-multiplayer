@@ -26,7 +26,6 @@ let paddleWidth = 50;
 let paddleDiff = 25;
 let paddleX = [ 225, 225 ];
 let trajectoryX = [ 0, 0 ];
-let playerMoved = false;
 
 // Ball
 let ballX = width / 2;
@@ -35,7 +34,7 @@ let ballRadius = 5;
 let ballDirection = 1;
 
 // Speed
-let speedY = 2;
+let speedY = 0;
 let speedX = 0;
 
 // Score for Both Players
@@ -165,9 +164,6 @@ function renderCanvas() {
 }
 
 function renderGameOver(winner) {
-  // Hide Canvas
-  //canvas.hidden = true;
-
   // Container
   gameOverEl.textContent = '';
   gameOverEl.classList.add('game-over-container');
@@ -200,9 +196,7 @@ function ballMove() {
   // Vertical Speed
   ballY += speedY * ballDirection;
   // Horizontal Speed
-  if (playerMoved) {
-    ballX += speedX;
-  }
+  ballX += speedX;
   socket.emit('ballMove', {
     ballX,
     ballY,
@@ -214,7 +208,9 @@ function ballMove() {
 function ballReset() {
   ballX = width / 2;
   ballY = height / 2;
+
   speedY = 3;
+  speedX = 0;
 
   socket.emit('ballMove', {
     ballX,
@@ -237,12 +233,10 @@ function ballBoundaries() {
   if (ballY > height - paddleDiff+ballRadius) {
     if (ballX >= paddleX[0] && ballX <= paddleX[0] + paddleWidth) {
       // Add Speed on Hit
-      if (playerMoved) {
-        speedY += 1;
-        // Max Speed
-        if (speedY > 5) {
-          speedY = 5;
-        }
+      speedY += 1;
+      // Max Speed
+      if (speedY > 5) {
+        speedY = 5;
       }
       ballDirection = -ballDirection;
       trajectoryX[0] = ballX - (paddleX[0] + paddleDiff);
@@ -257,12 +251,10 @@ function ballBoundaries() {
   if (ballY < paddleDiff-ballRadius) {
     if (ballX >= paddleX[1] && ballX <= paddleX[1] + paddleWidth) {
       // Add Speed on Hit
-      if (playerMoved) {
-        speedY += 1;
-        // Max Speed
-        if (speedY > 5) {
-          speedY = 5;
-        }
+      speedY += 1;
+      // Max Speed
+      if (speedY > 5) {
+        speedY = 5;
       }
       ballDirection = -ballDirection;
       trajectoryX[1] = ballX - (paddleX[1] + paddleDiff);
@@ -291,9 +283,12 @@ function loadGame() {
 
 function startGame() {
   paddleIndex = isReferee ? 0 : 1;
+
+  speedY = 2;
+  speedX = 0;
+
   requestAnimationFrame(animate);
   canvas.addEventListener('mousemove', (e) => {
-    playerMoved = true;
     paddleX[paddleIndex] = e.offsetX;
     if (paddleX[paddleIndex] < 0) {
       paddleX[paddleIndex] = 0;
